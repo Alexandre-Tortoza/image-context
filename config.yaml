@@ -1,0 +1,26 @@
+dataset:
+  bag_path: ../vlm-cotext-map/dataset/Corridor02/corridor02.bag
+  image_topic: /camera_1/image_raw
+  sample_size: 10
+  seed: 42
+
+qwen:
+  checkpoint: Qwen/Qwen3-VL-4B-Instruct
+  quantization: int4
+  device: cuda
+  max_new_tokens: 2048
+
+grounding:
+  checkpoint: IDEA-Research/grounding-dino-base
+  device: cuda
+  box_threshold: 0.40
+  text_threshold: 0.30
+  maximum_detections_per_concept: 3
+
+sam2:
+  checkpoint: facebook/sam2.1-hiera-tiny
+  device: cuda
+
+minimum_concept_confidence: 0.60
+output_directory: runs
+run_id: corridor02-sample
