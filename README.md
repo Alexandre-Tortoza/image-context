@@ -59,6 +59,14 @@ Uma execucao interrompida pode ser retomada sem `--overwrite`. Artefatos conclui
 mesma configuracao sao reutilizados. Uma alteracao de seed, prompt, checkpoint ou threshold
 muda o fingerprint e exige outro `--run-id` ou `--overwrite`.
 
+Para testar parser, queries, thresholds, DINO ou SAM2 sem executar novamente o Qwen:
+
+```bash
+image-context reprocess --config config.yaml \
+  --source-run runs/corridor02-v5 \
+  --run-id corridor02-v5-adaptive --overwrite
+```
+
 ## Saida
 
 ```text
@@ -74,12 +82,19 @@ runs/<run-id>/
         ├── consolidated_context.json
         ├── detections.json
         ├── result.json
+        ├── grounding_overlay.png
+        ├── sam2_overlay.png
         ├── overlay.png
         └── masks/
 ```
 
 Respostas brutas da VLM, configuracao, seed, indices de origem, caixas, confiancas e mascaras
 sao mantidos para auditoria.
+
+Quando as tres passagens VLM nao produzem nenhum conceito aceito, o atributo ambiental escolhe
+`indoor_fallback_queries` ou `outdoor_fallback_queries`. Essas consultas usam um threshold
+proprio e registram a origem em `parser_notes`, mantendo a diferenca entre proposta VLM e
+fallback.
 
 ## Qualidade
 

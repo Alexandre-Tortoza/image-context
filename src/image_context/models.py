@@ -33,6 +33,10 @@ class VisualConcept:
     region_kind: RegionKind
     attributes: dict[str, str] = field(default_factory=dict)
     source_pass: PassName = "objects"
+    detector_query: str | None = None
+    horizontal_position: str | None = None
+    depth_position: str | None = None
+    parser_notes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

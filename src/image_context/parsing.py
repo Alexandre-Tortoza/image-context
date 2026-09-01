@@ -18,6 +18,19 @@ from image_context.models import (
 _CODE_FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
 _REGION_KINDS = {"bounded_object", "environmental_region"}
 _SEVERITIES = {"low", "medium", "high", "critical"}
+_HORIZONTAL_POSITIONS = {"left", "center", "right"}
+_DEPTH_POSITIONS = {"foreground", "middle_ground", "background"}
+_BOUNDED_ALIASES = {"structural_element", "sign", "object", "foreground_object"}
+_DIFFUSE_TERMS = {
+    "dust",
+    "fire",
+    "flood",
+    "fog",
+    "haze",
+    "smoke",
+    "steam",
+    "water",
+}
 
 
 def parse_vlm_response(raw_response: str, pass_name: PassName) -> VlmPassResult:
@@ -59,18 +72,77 @@ def _parse_concept(value: object, pass_name: PassName) -> VisualConcept:
     label = _non_empty_string(item.get("label"), "concept.label")
     query = _non_empty_string(item.get("grounding_query"), "concept.grounding_query")
     confidence = _confidence(item.get("confidence"), "concept.confidence")
-    region_kind = _non_empty_string(item.get("region_kind"), "concept.region_kind")
-    if region_kind not in _REGION_KINDS:
-        raise ValueError(f"Unsupported concept.region_kind: {region_kind!r}.")
+    raw_region_kind = _non_empty_string(item.get("region_kind"), "concept.region_kind")
+    horizontal, depth = _parse_spatial(item.get("spatial"))
+    region_kind, horizontal, depth, parser_notes = _normalize_region_kind(
+        raw_region_kind,
+        label,
+        query,
+        horizontal,
+        depth,
+    )
     attributes = _string_mapping(item.get("attributes", {}), "concept.attributes")
     return VisualConcept(
         label=label.strip(),
         grounding_query=query.strip().lower(),
         confidence=confidence,
-        region_kind=cast(RegionKind, region_kind),
+        region_kind=region_kind,
         attributes=attributes,
         source_pass=pass_name,
+        detector_query=_detector_query(label),
+        horizontal_position=horizontal,
+        depth_position=depth,
+        parser_notes=parser_notes,
     )
+
+
+def _parse_spatial(value: object) -> tuple[str | None, str | None]:
+    if value is None:
+        return None, None
+    spatial = _object(value, "concept.spatial")
+    horizontal = spatial.get("horizontal")
+    depth = spatial.get("depth")
+    parsed_horizontal = horizontal if isinstance(horizontal, str) else None
+    parsed_depth = depth if isinstance(depth, str) else None
+    if parsed_horizontal not in _HORIZONTAL_POSITIONS:
+        parsed_horizontal = None
+    if parsed_depth not in _DEPTH_POSITIONS:
+        parsed_depth = None
+    return parsed_horizontal, parsed_depth
+
+
+def _normalize_region_kind(
+    raw: str,
+    label: str,
+    query: str,
+    horizontal: str | None,
+    depth: str | None,
+) -> tuple[RegionKind, str | None, str | None, tuple[str, ...]]:
+    normalized = raw.strip().lower()
+    notes: list[str] = []
+    if normalized in _HORIZONTAL_POSITIONS:
+        horizontal = normalized
+        normalized = "bounded_object"
+        notes.append(f"moved region_kind '{raw}' to spatial.horizontal")
+    elif normalized in _DEPTH_POSITIONS:
+        depth = normalized
+        normalized = "bounded_object"
+        notes.append(f"moved region_kind '{raw}' to spatial.depth")
+    elif normalized in _BOUNDED_ALIASES:
+        normalized = "bounded_object"
+        notes.append(f"normalized region_kind '{raw}' to bounded_object")
+    elif normalized not in _REGION_KINDS:
+        raise ValueError(f"Unsupported concept.region_kind: {raw!r}.")
+
+    text = f"{label} {query}".lower()
+    if normalized == "environmental_region" and not any(term in text for term in _DIFFUSE_TERMS):
+        normalized = "bounded_object"
+        notes.append("normalized non-diffuse environmental_region to bounded_object")
+    return cast(RegionKind, normalized), horizontal, depth, tuple(notes)
+
+
+def _detector_query(label: str) -> str:
+    return " ".join(label.strip().lower().split()[:3])
 
 
 def _parse_risk(value: object) -> RiskFinding:

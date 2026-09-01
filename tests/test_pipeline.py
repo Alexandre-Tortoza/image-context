@@ -32,10 +32,10 @@ class FakeVlm:
 
     def generate(self, image_path: Path, prompt: str) -> str:
         self.events.append(f"vlm:{image_path.parent.name}")
-        if "physical objects" in prompt:
+        if "exhaustive inventory" in prompt:
             concepts = [_concept("door", "metal door")]
             risks = []
-        elif "environmental context" in prompt:
+        elif "global lighting" in prompt:
             concepts = [_concept("smoke", "visible smoke", region="environmental_region")]
             risks = []
         else:
@@ -134,9 +134,12 @@ def test_pipeline_runs_models_sequentially_and_writes_review_artifacts(tmp_path:
     assert factory.events.index("close:grounder") < factory.events.index("create:segmenter")
     frame = repository.frames_directory / "frame-000000"
     assert (frame / "vlm_objects.json").is_file()
+    assert (frame / "vlm_objects_raw.txt").is_file()
     assert (frame / "vlm_environment.json").is_file()
     assert (frame / "vlm_risks.json").is_file()
     assert (frame / "result.json").is_file()
+    assert (frame / "grounding_overlay.png").is_file()
+    assert (frame / "sam2_overlay.png").is_file()
     assert (frame / "overlay.png").is_file()
     assert len(tuple((frame / "masks").glob("*.png"))) == 3
 

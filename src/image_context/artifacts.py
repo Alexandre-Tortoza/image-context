@@ -68,6 +68,14 @@ class ArtifactRepository:
             vlm_result_to_dict(result),
         )
 
+    def write_vlm_raw_response(
+        self, sample: ImageSample, pass_name: PassName, raw_response: str
+    ) -> None:
+        """Persist model text before parsing so malformed output remains auditable."""
+        path = self.frame_directory(sample) / f"vlm_{pass_name}_raw.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(raw_response, encoding="utf-8")
+
     def read_vlm_result(self, sample: ImageSample, pass_name: PassName) -> VlmPassResult | None:
         """Load a completed VLM pass when resuming."""
         path = self.frame_directory(sample) / f"vlm_{pass_name}.json"
@@ -80,11 +88,33 @@ class ArtifactRepository:
             {"concepts": [concept_to_dict(concept) for concept in concepts]},
         )
 
-    def write_detections(self, sample: ImageSample, detections: tuple[Detection, ...]) -> None:
+    def write_detections(
+        self,
+        sample: ImageSample,
+        concepts: tuple[VisualConcept, ...],
+        detections: tuple[Detection, ...],
+    ) -> None:
         """Persist Grounding DINO results."""
+        detection_count_by_query: dict[str, int] = {}
+        for detection in detections:
+            query = detection.concept.detector_query or detection.concept.label.lower()
+            detection_count_by_query[query] = detection_count_by_query.get(query, 0) + 1
         self._write_json(
             self.frame_directory(sample) / "detections.json",
-            {"detections": [detection_to_dict(item) for item in detections]},
+            {
+                "grounding_attempts": [
+                    {
+                        "label": concept.label,
+                        "detector_query": concept.detector_query or concept.label.lower(),
+                        "descriptive_query": concept.grounding_query,
+                        "detection_count": detection_count_by_query.get(
+                            concept.detector_query or concept.label.lower(), 0
+                        ),
+                    }
+                    for concept in concepts
+                ],
+                "detections": [detection_to_dict(item) for item in detections],
+            },
         )
 
     def read_detections(self, sample: ImageSample) -> tuple[Detection, ...] | None:
@@ -107,12 +137,42 @@ class ArtifactRepository:
         mask_path = mask_directory / f"{detection.detection_id}.png"
         if not cv2.imwrite(str(mask_path), mask.astype(np.uint8) * 255):
             raise OSError(f"Could not write segmentation mask to '{mask_path}'.")
+        mask_area = int(mask.sum())
+        if mask_area == 0:
+            raise ValueError(f"SAM2 returned an empty mask for '{detection.detection_id}'.")
+        height, width = mask.shape
+        box = detection.bounding_box
+        x_min = max(0, min(width, round(box.x_min)))
+        y_min = max(0, min(height, round(box.y_min)))
+        x_max = max(0, min(width, round(box.x_max)))
+        y_max = max(0, min(height, round(box.y_max)))
+        box_area = max(1, (x_max - x_min) * (y_max - y_min))
+        box_fill_ratio = float(mask[y_min:y_max, x_min:x_max].sum()) / box_area
+        component_count, _, statistics, _ = cv2.connectedComponentsWithStats(
+            mask.astype(np.uint8), connectivity=8
+        )
+        component_areas = statistics[1:, cv2.CC_STAT_AREA]
+        largest_component_share = (
+            0.0 if component_count <= 1 else float(component_areas.max()) / mask_area
+        )
+        rows, columns = np.nonzero(mask)
+        refined_box = [
+            int(columns.min()),
+            int(rows.min()),
+            int(columns.max()) + 1,
+            int(rows.max()) + 1,
+        ]
         self._write_json(
             mask_directory / f"{detection.detection_id}.json",
             {
                 "detection_id": detection.detection_id,
                 "confidence": confidence,
                 "mask_path": str(mask_path),
+                "mask_area_pixels": mask_area,
+                "mask_area_fraction": mask_area / float(width * height),
+                "box_fill_ratio": box_fill_ratio,
+                "largest_component_share": largest_component_share,
+                "refined_bounding_box": refined_box,
             },
         )
         return mask_path
@@ -120,20 +180,29 @@ class ArtifactRepository:
     def mask_is_complete(self, sample: ImageSample, detection: Detection) -> bool:
         """Return whether both mask and metadata exist for a detection."""
         directory = self.frame_directory(sample) / "masks"
-        return (directory / f"{detection.detection_id}.png").exists() and (
-            directory / f"{detection.detection_id}.json"
-        ).exists()
+        mask_path = directory / f"{detection.detection_id}.png"
+        metadata_path = directory / f"{detection.detection_id}.json"
+        if not mask_path.exists() or not metadata_path.exists():
+            return False
+        mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+        if mask is None or mask.shape != (sample.height, sample.width):
+            return False
+        metadata = self._read_json(metadata_path)
+        return metadata.get("detection_id") == detection.detection_id
 
     def write_overlay(
         self,
         sample: ImageSample,
         detections: tuple[Detection, ...],
         masks: dict[str, NDArray[np.bool_]],
-    ) -> Path:
-        """Render boxes, labels, and translucent masks for human inspection."""
-        image = cv2.imread(str(sample.image_path), cv2.IMREAD_COLOR)
-        if image is None:
+    ) -> tuple[Path, Path, Path]:
+        """Render separate grounding, segmentation, and combined inspection overlays."""
+        original = cv2.imread(str(sample.image_path), cv2.IMREAD_COLOR)
+        if original is None:
             raise OSError(f"Could not read extracted image '{sample.image_path}'.")
+        grounding_image = original.copy()
+        segmentation_image = original.copy()
+        combined_image = original.copy()
         palette = ((40, 220, 255), (255, 120, 40), (90, 230, 90), (220, 80, 220))
         for index, detection in enumerate(detections):
             color = palette[index % len(palette)]
@@ -145,25 +214,37 @@ class ArtifactRepository:
                 loaded = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
                 mask = None if loaded is None else loaded > 0
             if mask is not None:
-                image[mask] = (image[mask] * 0.55 + np.asarray(color) * 0.45).astype(np.uint8)
+                for image in (segmentation_image, combined_image):
+                    image[mask] = (image[mask] * 0.55 + np.asarray(color) * 0.45).astype(
+                        np.uint8
+                    )
             box = detection.bounding_box
             start = (round(box.x_min), round(box.y_min))
             end = (round(box.x_max), round(box.y_max))
-            cv2.rectangle(image, start, end, color, 2)
-            cv2.putText(
-                image,
-                f"{detection.concept.label} {detection.confidence:.2f}",
-                (start[0], max(18, start[1] - 6)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
-                color,
-                1,
-                cv2.LINE_AA,
-            )
-        path = self.frame_directory(sample) / "overlay.png"
-        if not cv2.imwrite(str(path), image):
-            raise OSError(f"Could not write overlay to '{path}'.")
-        return path
+            for image in (grounding_image, combined_image):
+                cv2.rectangle(image, start, end, color, 2)
+                cv2.putText(
+                    image,
+                    f"{detection.concept.label} {detection.confidence:.2f}",
+                    (start[0], max(18, start[1] - 6)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    color,
+                    1,
+                    cv2.LINE_AA,
+                )
+        directory = self.frame_directory(sample)
+        grounding_path = directory / "grounding_overlay.png"
+        segmentation_path = directory / "sam2_overlay.png"
+        combined_path = directory / "overlay.png"
+        for path, image in (
+            (grounding_path, grounding_image),
+            (segmentation_path, segmentation_image),
+            (combined_path, combined_image),
+        ):
+            if not cv2.imwrite(str(path), image):
+                raise OSError(f"Could not write overlay to '{path}'.")
+        return grounding_path, segmentation_path, combined_path
 
     def write_result(
         self,
@@ -173,9 +254,22 @@ class ArtifactRepository:
         detections: tuple[Detection, ...],
     ) -> None:
         """Persist the complete human- and machine-readable result for one image."""
+        segmentations = self._segmentation_metadata(sample, detections)
+        if not concepts:
+            status = "complete_no_concepts"
+        elif not detections:
+            status = "complete_no_detections"
+        elif len(segmentations) != len(detections):
+            status = "partial"
+        else:
+            status = "complete_with_masks"
+        detections_payload = self._read_json(
+            self.frame_directory(sample) / "detections.json"
+        )
         self._write_json(
             self.frame_directory(sample) / "result.json",
             {
+                "status": status,
                 "sample": sample_to_dict(sample),
                 "scene_attributes_by_pass": {
                     result.pass_name: result.scene_attributes for result in pass_results
@@ -187,8 +281,28 @@ class ArtifactRepository:
                 ],
                 "concepts": [concept_to_dict(concept) for concept in concepts],
                 "detections": [detection_to_dict(detection) for detection in detections],
+                "grounding_attempts": detections_payload.get("grounding_attempts", []),
+                "segmentations": segmentations,
+                "pass_status": {
+                    result.pass_name: {
+                        "accepted_concepts": len(result.concepts),
+                        "rejected_entries": list(result.rejected_entries),
+                    }
+                    for result in pass_results
+                },
             },
         )
+
+    def _segmentation_metadata(
+        self, sample: ImageSample, detections: tuple[Detection, ...]
+    ) -> list[dict[str, Any]]:
+        metadata: list[dict[str, Any]] = []
+        directory = self.frame_directory(sample) / "masks"
+        for detection in detections:
+            path = directory / f"{detection.detection_id}.json"
+            if path.exists():
+                metadata.append(self._read_json(path))
+        return metadata
 
     def write_failure(self, sample: ImageSample, stage: str, error: Exception) -> None:
         """Persist a frame-local failure without discarding other samples."""

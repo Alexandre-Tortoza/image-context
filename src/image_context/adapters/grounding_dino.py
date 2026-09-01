@@ -11,6 +11,7 @@ from PIL import Image
 from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
 
 from image_context.config import GroundingConfig
+from image_context.grounding import non_max_suppression
 from image_context.models import BoundingBox, Detection, ImageSample, VisualConcept
 
 
@@ -27,11 +28,12 @@ class GroundingDinoBackend:
 
     def detect(self, sample: ImageSample, concept: VisualConcept) -> tuple[Detection, ...]:
         """Return the strongest pixel-space regions for one concept query."""
+        detector_query = concept.detector_query or concept.label.lower()
         with Image.open(sample.image_path) as image_file:
             image = image_file.convert("RGB")
             inputs = self._processor(
                 images=image,
-                text=f"{concept.grounding_query.strip().lower()}.",
+                text=f"{detector_query.strip().lower()}.",
                 return_tensors="pt",
             ).to(self._model.device)
         with torch.inference_mode():
@@ -43,20 +45,39 @@ class GroundingDinoBackend:
             text_threshold=self._config.text_threshold,
             target_sizes=[(sample.height, sample.width)],
         )[0]
-        candidates = sorted(
-            zip(result["boxes"], result["scores"], strict=True),
-            key=lambda item: float(item[1]),
-            reverse=True,
-        )[: self._config.maximum_detections_per_concept]
-        query_hash = hashlib.sha256(concept.grounding_query.encode()).hexdigest()[:10]
-        return tuple(
-            Detection(
-                detection_id=f"{query_hash}-{index}",
-                concept=concept,
-                confidence=float(score),
-                bounding_box=BoundingBox(*(float(coordinate) for coordinate in box)),
+        candidates = tuple(
+            (
+                BoundingBox(*(float(coordinate) for coordinate in box)),
+                float(score),
             )
-            for index, (box, score) in enumerate(candidates)
+            for box, score in zip(result["boxes"], result["scores"], strict=True)
+            if float(score) >= self._minimum_score(concept)
+        )
+        kept = non_max_suppression(candidates, self._config.nms_iou_threshold)[
+            : self._config.maximum_detections_per_concept
+        ]
+        detections: list[Detection] = []
+        for box, score in kept:
+            identity = (
+                f"{sample.frame_id}|{detector_query}|{box.x_min:.2f}|{box.y_min:.2f}|"
+                f"{box.x_max:.2f}|{box.y_max:.2f}"
+            )
+            detections.append(
+                Detection(
+                    detection_id=hashlib.sha256(identity.encode()).hexdigest()[:12],
+                    concept=concept,
+                    confidence=score,
+                    bounding_box=box,
+                )
+            )
+        return tuple(detections)
+
+    def _minimum_score(self, concept: VisualConcept) -> float:
+        is_fallback = any("fallback" in note for note in concept.parser_notes)
+        return (
+            self._config.fallback_box_threshold
+            if is_fallback
+            else self._config.box_threshold
         )
 
     def close(self) -> None:

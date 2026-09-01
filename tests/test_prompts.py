@@ -18,4 +18,4 @@ def test_later_prompt_embeds_prior_validated_result() -> None:
     assert "corridor" in prompt
     assert "not embedded" not in prompt
     assert "hypotheses" in prompt
-    assert prompt.index("corridor") < prompt.index("Inspect the image")
+    assert prompt.index("corridor") < prompt.index("Analyze global lighting")

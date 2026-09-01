@@ -37,6 +37,12 @@ def concept_to_dict(concept: VisualConcept) -> dict[str, Any]:
         "region_kind": concept.region_kind,
         "attributes": concept.attributes,
         "source_pass": concept.source_pass,
+        "detector_query": concept.detector_query,
+        "spatial": {
+            "horizontal": concept.horizontal_position,
+            "depth": concept.depth_position,
+        },
+        "parser_notes": list(concept.parser_notes),
     }
 
 
@@ -49,6 +55,10 @@ def concept_from_dict(payload: dict[str, Any]) -> VisualConcept:
         region_kind=payload["region_kind"],
         attributes=dict(payload["attributes"]),
         source_pass=payload["source_pass"],
+        detector_query=payload.get("detector_query"),
+        horizontal_position=payload.get("spatial", {}).get("horizontal"),
+        depth_position=payload.get("spatial", {}).get("depth"),
+        parser_notes=tuple(payload.get("parser_notes", [])),
     )
 
 

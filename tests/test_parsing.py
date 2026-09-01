@@ -58,3 +58,29 @@ def test_parse_audits_invalid_entry_without_discarding_frame() -> None:
 
     assert not result.concepts
     assert "region_kind" in result.rejected_entries[0]
+
+
+def test_parse_recovers_position_from_region_kind() -> None:
+    raw = json.dumps(
+        {
+            "concepts": [
+                {
+                    "label": "door",
+                    "grounding_query": "red door on left wall",
+                    "confidence": 0.9,
+                    "region_kind": "left",
+                    "attributes": {},
+                }
+            ],
+            "scene_attributes": {},
+            "risks": [],
+        }
+    )
+
+    result = parse_vlm_response(raw, "objects")
+
+    concept = result.concepts[0]
+    assert concept.region_kind == "bounded_object"
+    assert concept.horizontal_position == "left"
+    assert concept.detector_query == "door"
+    assert concept.parser_notes == ("moved region_kind 'left' to spatial.horizontal",)

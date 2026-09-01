@@ -13,8 +13,10 @@ qwen:
 grounding:
   checkpoint: IDEA-Research/grounding-dino-base
   device: cuda
-  box_threshold: 0.40
-  text_threshold: 0.30
+  box_threshold: 0.30
+  text_threshold: 0.25
+  nms_iou_threshold: 0.60
+  fallback_box_threshold: 0.40
   maximum_detections_per_concept: 3
 
 sam2:
@@ -22,5 +24,23 @@ sam2:
   device: cuda
 
 minimum_concept_confidence: 0.60
+indoor_fallback_queries:
+  - robot
+  - wheel
+  - door
+  - doorway
+  - exit sign
+  - window
+  - floor
+  - wall
+  - ceiling light
+  - debris
+outdoor_fallback_queries:
+  - robot
+  - wheel
+  - building
+  - tree
+  - pole
+  - road
 output_directory: runs
 run_id: corridor02-sample

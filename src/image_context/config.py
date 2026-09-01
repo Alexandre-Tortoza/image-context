@@ -35,8 +35,10 @@ class GroundingConfig:
 
     checkpoint: str = "IDEA-Research/grounding-dino-base"
     device: str = "cuda"
-    box_threshold: float = 0.40
-    text_threshold: float = 0.30
+    box_threshold: float = 0.30
+    text_threshold: float = 0.25
+    nms_iou_threshold: float = 0.60
+    fallback_box_threshold: float = 0.40
     maximum_detections_per_concept: int = 3
 
 
@@ -57,6 +59,8 @@ class PipelineConfig:
     grounding: GroundingConfig = GroundingConfig()
     sam2: Sam2Config = Sam2Config()
     minimum_concept_confidence: float = 0.60
+    indoor_fallback_queries: tuple[str, ...] = ()
+    outdoor_fallback_queries: tuple[str, ...] = ()
     output_directory: Path = Path("runs")
     run_id: str = "corridor02-sample"
 
@@ -86,6 +90,8 @@ def load_config(path: Path) -> PipelineConfig:
         grounding=GroundingConfig(**grounding),
         sam2=Sam2Config(**sam2),
         minimum_concept_confidence=float(payload.get("minimum_concept_confidence", 0.60)),
+        indoor_fallback_queries=tuple(payload.get("indoor_fallback_queries", [])),
+        outdoor_fallback_queries=tuple(payload.get("outdoor_fallback_queries", [])),
         output_directory=output_directory,
         run_id=str(payload.get("run_id", "corridor02-sample")),
     )
@@ -102,6 +108,23 @@ def _validate(config: PipelineConfig) -> None:
         raise ValueError("qwen.quantization must be 'none' or 'int4'.")
     if not 0.0 <= config.minimum_concept_confidence <= 1.0:
         raise ValueError("minimum_concept_confidence must be between 0.0 and 1.0.")
+    for name, threshold in (
+        ("grounding.box_threshold", config.grounding.box_threshold),
+        ("grounding.text_threshold", config.grounding.text_threshold),
+        ("grounding.nms_iou_threshold", config.grounding.nms_iou_threshold),
+        ("grounding.fallback_box_threshold", config.grounding.fallback_box_threshold),
+    ):
+        if not 0.0 <= threshold <= 1.0:
+            raise ValueError(f"{name} must be between 0.0 and 1.0.")
+    if config.grounding.maximum_detections_per_concept <= 0:
+        raise ValueError("grounding.maximum_detections_per_concept must be positive.")
+    fallback_queries = config.indoor_fallback_queries + config.outdoor_fallback_queries
+    invalid_fallback = any(
+        not isinstance(query, str) or not query.strip()
+        for query in fallback_queries
+    )
+    if invalid_fallback:
+        raise ValueError("fallback query lists must contain only non-empty strings.")
 
 
 def _mapping(payload: dict[str, Any], name: str, *, required: bool = True) -> dict[str, Any]:

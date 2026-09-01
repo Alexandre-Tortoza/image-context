@@ -37,12 +37,16 @@ class ImageContextPipeline:
         progress: ProgressReporter,
         *,
         minimum_concept_confidence: float,
+        indoor_fallback_queries: tuple[str, ...] = (),
+        outdoor_fallback_queries: tuple[str, ...] = (),
     ) -> None:
         self._sampler = sampler
         self._model_factory = model_factory
         self._artifacts = artifacts
         self._progress = progress
         self._minimum_concept_confidence = minimum_concept_confidence
+        self._indoor_fallback_queries = indoor_fallback_queries
+        self._outdoor_fallback_queries = outdoor_fallback_queries
 
     def execute(self, sample_size: int, seed: int) -> PipelineOutcome:
         """Execute all stages and isolate model errors to their source frame."""
@@ -53,8 +57,18 @@ class ImageContextPipeline:
             self._progress.advance(sample.frame_id)
 
         pass_results = self._run_vlm_pass(samples)
+        return self.execute_from_results(samples, pass_results)
+
+    def execute_from_results(
+        self,
+        samples: tuple[ImageSample, ...],
+        pass_results: dict[str, tuple[VlmPassResult, ...]],
+    ) -> PipelineOutcome:
+        """Run consolidation, grounding, and segmentation from persisted VLM responses."""
         concepts = {
-            frame_id: consolidate_concepts(results, self._minimum_concept_confidence)
+            frame_id: self._with_fallback(
+                consolidate_concepts(results, self._minimum_concept_confidence), results
+            )
             for frame_id, results in pass_results.items()
         }
         for sample in samples:
@@ -66,6 +80,38 @@ class ImageContextPipeline:
         failed = tuple(sample.frame_id for sample in samples if sample.frame_id not in completed)
         return PipelineOutcome(samples, tuple(completed), failed)
 
+    def _with_fallback(
+        self,
+        concepts: tuple[VisualConcept, ...],
+        pass_results: tuple[VlmPassResult, ...],
+    ) -> tuple[VisualConcept, ...]:
+        if concepts:
+            return concepts
+        environment_text = " ".join(
+            value
+            for result in pass_results
+            for key, value in result.scene_attributes.items()
+            if key in {"environment", "lighting"}
+        ).lower()
+        is_outdoor = "outdoor" in environment_text or "open field" in environment_text
+        queries = (
+            self._outdoor_fallback_queries if is_outdoor else self._indoor_fallback_queries
+        )
+        return tuple(
+            VisualConcept(
+                label=query,
+                grounding_query=query,
+                detector_query=query,
+                confidence=self._minimum_concept_confidence,
+                region_kind="bounded_object",
+                parser_notes=(
+                    f"configured {'outdoor' if is_outdoor else 'indoor'} fallback after "
+                    "empty VLM result",
+                ),
+            )
+            for query in queries
+        )
+
     def _run_vlm_pass(
         self, samples: tuple[ImageSample, ...]
     ) -> dict[str, tuple[VlmPassResult, ...]]:
@@ -76,22 +122,24 @@ class ImageContextPipeline:
         try:
             for sample in samples:
                 frame_results: list[VlmPassResult] = []
-                try:
-                    for pass_name in _PASS_NAMES:
+                for pass_name in _PASS_NAMES:
+                    try:
                         result = self._artifacts.read_vlm_result(sample, pass_name)
                         if result is None:
                             prompt = build_prompt(pass_name, tuple(frame_results))
-                            result = parse_vlm_response(
-                                backend.generate(sample.image_path, prompt), pass_name
+                            raw_response = backend.generate(sample.image_path, prompt)
+                            self._artifacts.write_vlm_raw_response(
+                                sample, pass_name, raw_response
                             )
+                            result = parse_vlm_response(raw_response, pass_name)
                             self._artifacts.write_vlm_result(sample, result)
                         frame_results.append(result)
-                        self._progress.advance(f"{sample.frame_id}:{pass_name}")
-                except Exception as error:  # noqa: BLE001 - intentional per-frame isolation
-                    failures.append(sample.frame_id)
-                    self._artifacts.write_failure(sample, "vlm", error)
-                    continue
-                results_by_frame[sample.frame_id] = tuple(frame_results)
+                    except Exception as error:  # noqa: BLE001 - per-pass isolation
+                        failures.append(f"{sample.frame_id}:{pass_name}")
+                        self._artifacts.write_failure(sample, f"vlm_{pass_name}", error)
+                    self._progress.advance(f"{sample.frame_id}:{pass_name}")
+                if frame_results:
+                    results_by_frame[sample.frame_id] = tuple(frame_results)
         finally:
             backend.close()
         self._progress.failures("vlm", failures)
@@ -102,7 +150,11 @@ class ImageContextPipeline:
         samples: tuple[ImageSample, ...],
         concepts_by_frame: dict[str, tuple[VisualConcept, ...]],
     ) -> dict[str, tuple[Detection, ...]]:
-        total = sum(len(concepts) for concepts in concepts_by_frame.values())
+        grounding_concepts_by_frame = {
+            frame_id: _unique_detector_queries(concepts)
+            for frame_id, concepts in concepts_by_frame.items()
+        }
+        total = sum(len(concepts) for concepts in grounding_concepts_by_frame.values())
         self._progress.stage("grounding-dino", total)
         if total == 0:
             empty_results: dict[str, tuple[Detection, ...]] = {
@@ -112,33 +164,35 @@ class ImageContextPipeline:
             }
             for sample in samples:
                 if sample.frame_id in empty_results:
-                    self._artifacts.write_detections(sample, ())
+                    self._artifacts.write_detections(sample, (), ())
             return empty_results
         backend = self._model_factory.create_grounder()
         detections_by_frame: dict[str, tuple[Detection, ...]] = {}
         failures: list[str] = []
         try:
             for sample in samples:
-                concepts = concepts_by_frame.get(sample.frame_id)
+                concepts = grounding_concepts_by_frame.get(sample.frame_id)
                 if concepts is None:
                     continue
                 resumed = self._artifacts.read_detections(sample)
                 if resumed is not None:
                     detections_by_frame[sample.frame_id] = resumed
                     for concept in concepts:
-                        self._progress.advance(f"{sample.frame_id}:{concept.grounding_query}:resumed")
+                        query = concept.detector_query or concept.label.lower()
+                        self._progress.advance(f"{sample.frame_id}:{query}:resumed")
                     continue
                 frame_detections: list[Detection] = []
                 try:
                     for concept in concepts:
                         frame_detections.extend(backend.detect(sample, concept))
-                        self._progress.advance(f"{sample.frame_id}:{concept.grounding_query}")
+                        query = concept.detector_query or concept.label.lower()
+                        self._progress.advance(f"{sample.frame_id}:{query}")
                 except Exception as error:  # noqa: BLE001 - intentional per-frame isolation
                     failures.append(sample.frame_id)
                     self._artifacts.write_failure(sample, "grounding", error)
                     continue
                 detections = tuple(frame_detections)
-                self._artifacts.write_detections(sample, detections)
+                self._artifacts.write_detections(sample, concepts, detections)
                 detections_by_frame[sample.frame_id] = detections
         finally:
             backend.close()
@@ -199,7 +253,7 @@ class ImageContextPipeline:
                         concepts_by_frame[sample.frame_id],
                         detections,
                     )
-                except (ValueError, OSError, cv2.error) as error:
+                except (RuntimeError, ValueError, OSError, cv2.error) as error:
                     failures.append(sample.frame_id)
                     self._artifacts.write_failure(sample, "sam2", error)
                     continue
@@ -231,3 +285,16 @@ class ConsoleProgressReporter:
     def failures(self, stage: str, frame_ids: Sequence[str]) -> None:
         if frame_ids:
             print(f"[{stage}] failed frames: {', '.join(frame_ids)}")
+
+
+def _unique_detector_queries(
+    concepts: tuple[VisualConcept, ...],
+) -> tuple[VisualConcept, ...]:
+    """Keep the strongest concept for each query submitted to Grounding DINO."""
+    by_query: dict[str, VisualConcept] = {}
+    for concept in concepts:
+        query = concept.detector_query or concept.label.lower()
+        current = by_query.get(query)
+        if current is None or concept.confidence > current.confidence:
+            by_query[query] = concept
+    return tuple(by_query.values())
