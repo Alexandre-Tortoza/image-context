@@ -51,6 +51,21 @@ class Sam2Config:
 
 
 @dataclass(frozen=True)
+class RegionFirstConfig:
+    """Class-agnostic discovery, dense feature, and local analysis settings."""
+
+    feature_checkpoint: str = "facebook/dinov2-small"
+    feature_device: str = "cuda"
+    discovery_grid_size: int = 4
+    maximum_regions: int = 12
+    minimum_region_area_fraction: float = 0.002
+    maximum_region_area_fraction: float = 0.80
+    minimum_region_confidence: float = 0.70
+    minimum_region_stability: float = 0.90
+    mask_iou_threshold: float = 0.85
+
+
+@dataclass(frozen=True)
 class PipelineConfig:
     """Complete run configuration."""
 
@@ -58,6 +73,7 @@ class PipelineConfig:
     qwen: QwenConfig = QwenConfig()
     grounding: GroundingConfig = GroundingConfig()
     sam2: Sam2Config = Sam2Config()
+    region_first: RegionFirstConfig = RegionFirstConfig()
     minimum_concept_confidence: float = 0.60
     indoor_fallback_queries: tuple[str, ...] = ()
     outdoor_fallback_queries: tuple[str, ...] = ()
@@ -76,6 +92,7 @@ def load_config(path: Path) -> PipelineConfig:
     qwen = _mapping(payload, "qwen", required=False)
     grounding = _mapping(payload, "grounding", required=False)
     sam2 = _mapping(payload, "sam2", required=False)
+    region_first = _mapping(payload, "region_first", required=False)
     base = path.resolve().parent
     bag_path = _resolved_path(base, _string(dataset, "bag_path"))
     output_directory = _resolved_path(base, str(payload.get("output_directory", "runs")))
@@ -89,6 +106,7 @@ def load_config(path: Path) -> PipelineConfig:
         qwen=QwenConfig(**qwen),
         grounding=GroundingConfig(**grounding),
         sam2=Sam2Config(**sam2),
+        region_first=RegionFirstConfig(**region_first),
         minimum_concept_confidence=float(payload.get("minimum_concept_confidence", 0.60)),
         indoor_fallback_queries=tuple(payload.get("indoor_fallback_queries", [])),
         outdoor_fallback_queries=tuple(payload.get("outdoor_fallback_queries", [])),
@@ -118,6 +136,25 @@ def _validate(config: PipelineConfig) -> None:
             raise ValueError(f"{name} must be between 0.0 and 1.0.")
     if config.grounding.maximum_detections_per_concept <= 0:
         raise ValueError("grounding.maximum_detections_per_concept must be positive.")
+    if config.region_first.discovery_grid_size <= 0:
+        raise ValueError("region_first.discovery_grid_size must be positive.")
+    if config.region_first.maximum_regions <= 0:
+        raise ValueError("region_first.maximum_regions must be positive.")
+    if not 0.0 <= config.region_first.mask_iou_threshold <= 1.0:
+        raise ValueError("region_first.mask_iou_threshold must be between 0.0 and 1.0.")
+    for name, threshold in (
+        ("minimum_region_confidence", config.region_first.minimum_region_confidence),
+        ("minimum_region_stability", config.region_first.minimum_region_stability),
+    ):
+        if not 0.0 <= threshold <= 1.0:
+            raise ValueError(f"region_first.{name} must be between 0.0 and 1.0.")
+    if not (
+        0.0
+        < config.region_first.minimum_region_area_fraction
+        < config.region_first.maximum_region_area_fraction
+        <= 1.0
+    ):
+        raise ValueError("region_first area fractions must satisfy 0 < minimum < maximum <= 1.")
     fallback_queries = config.indoor_fallback_queries + config.outdoor_fallback_queries
     invalid_fallback = any(
         not isinstance(query, str) or not query.strip()

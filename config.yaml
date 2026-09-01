@@ -23,6 +23,17 @@ sam2:
   checkpoint: facebook/sam2.1-hiera-tiny
   device: cuda
 
+region_first:
+  feature_checkpoint: facebook/dinov2-small
+  feature_device: cuda
+  discovery_grid_size: 4
+  maximum_regions: 12
+  minimum_region_area_fraction: 0.002
+  maximum_region_area_fraction: 0.80
+  minimum_region_confidence: 0.70
+  minimum_region_stability: 0.90
+  mask_iou_threshold: 0.85
+
 minimum_concept_confidence: 0.60
 indoor_fallback_queries:
   - robot

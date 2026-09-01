@@ -17,6 +17,18 @@ Os tres modelos pesados nunca ficam residentes ao mesmo tempo. O Qwen processa t
 imagens e e descarregado antes do Grounding DINO; o mesmo ocorre antes do SAM2. Isso permite
 usar a GPU de referencia com 8 GB de VRAM.
 
+O baseline permanece disponivel sem alteracao. Uma segunda estrategia parte da geometria
+observada, antes de solicitar rotulos ao VLM:
+
+```text
+SAM2 automatico -> regioes class-agnostic
+  -> DINOv2 denso com pooling por mascara
+  -> Qwen global -> Qwen local por regiao
+  -> regioes semanticas 2D, embeddings, proveniencia e overlay
+```
+
+Tambem nesse fluxo cada modelo e descarregado antes do seguinte ser criado.
+
 ## Preparacao
 
 O projeto requer Python 3.12.
@@ -95,6 +107,26 @@ Quando as tres passagens VLM nao produzem nenhum conceito aceito, o atributo amb
 `indoor_fallback_queries` ou `outdoor_fallback_queries`. Essas consultas usam um threshold
 proprio e registram a origem em `parser_notes`, mantendo a diferenca entre proposta VLM e
 fallback.
+
+## Comparar estrategias
+
+O comando `analyze` recebe uma imagem comum e executa uma estrategia ou ambas sobre a mesma
+entrada. Os artefatos e caches ficam separados, portanto executar ou sobrescrever uma estrategia
+nao remove o resultado da outra.
+
+```bash
+image-context analyze --config config.yaml --image caminho/imagem.png \
+  --strategy all --run-id comparison-01
+```
+
+Valores aceitos por `--strategy`: `baseline`, `region-first` e `all`. A raiz da execucao contem
+`comparison.json`; o novo fluxo grava `region-first/semantic_regions.json`, `global_context.json`,
+`metrics.json`, `region_overlay.png` e, por regiao, `mask.png`, `context.png`, resposta VLM bruta e
+`visual_embedding.npy`.
+
+O SAM2 automatico usa uma grade deterministica de pontos, filtra mascaras por area e remove
+duplicatas por IoU. Os thresholds, limite de regioes e checkpoint DINOv2 ficam na secao
+`region_first` de `config.yaml`.
 
 ## Qualidade
 

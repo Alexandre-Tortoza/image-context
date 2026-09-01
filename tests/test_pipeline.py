@@ -144,6 +144,22 @@ def test_pipeline_runs_models_sequentially_and_writes_review_artifacts(tmp_path:
     assert len(tuple((frame / "masks").glob("*.png"))) == 3
 
 
+def test_baseline_implements_image_analysis_strategy(tmp_path: Path) -> None:
+    repository = ArtifactRepository(tmp_path / "run")
+    repository.initialize({"fingerprint": "test"}, overwrite=False)
+    image_path = tmp_path / "image.png"
+    assert cv2.imwrite(str(image_path), np.zeros((8, 10, 3), dtype=np.uint8))
+    sample = ImageSample("image", 0, 0, 10, 8, image_path)
+    pipeline = ImageContextPipeline(
+        FakeSampler(), FakeFactory(), repository, SilentProgress(), minimum_concept_confidence=0.6
+    )
+
+    outcome = pipeline.analyze(sample)
+
+    assert pipeline.strategy_name == "baseline"
+    assert outcome.completed_frame_ids == ("image",)
+
+
 def _concept(label: str, query: str, *, region: str = "bounded_object") -> dict[str, object]:
     return {
         "label": label,

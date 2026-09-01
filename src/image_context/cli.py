@@ -6,9 +6,12 @@ import argparse
 import hashlib
 import json
 import shutil
+import time
 from collections.abc import Sequence
 from dataclasses import replace
 from pathlib import Path
+
+import cv2
 
 from image_context.adapters.rosbag_sampler import RosbagImageSampler
 from image_context.artifacts import ArtifactRepository
@@ -25,6 +28,8 @@ def main(arguments: Sequence[str] | None = None) -> int:
     args = parser.parse_args(arguments)
     try:
         config = _apply_overrides(load_config(args.config), args)
+        if args.command == "analyze":
+            return _run_analyze(config, args)
         source_run = None if args.command != "reprocess" else args.source_run.resolve()
         artifacts = _initialize_artifacts(
             config, overwrite=args.overwrite, source_run=source_run
@@ -82,6 +87,18 @@ def _build_parser() -> argparse.ArgumentParser:
         command.add_argument("--overwrite", action="store_true")
         if name == "reprocess":
             command.add_argument("--source-run", type=Path, required=True)
+    analyze = subparsers.add_parser(
+        "analyze", description="Analyze one image with baseline, region-first, or both."
+    )
+    analyze.add_argument("--config", type=Path, default=Path("config.yaml"))
+    analyze.add_argument("--image", type=Path, required=True)
+    analyze.add_argument(
+        "--strategy", choices=("baseline", "region-first", "all"), default="all"
+    )
+    analyze.add_argument("--output", type=Path)
+    analyze.add_argument("--run-id")
+    analyze.add_argument("--overwrite", action="store_true")
+    analyze.set_defaults(sample_size=None, seed=None)
     return parser
 
 
@@ -182,6 +199,325 @@ def _load_source_vlm_results(
     sample_tuple = tuple(samples)
     artifacts.write_selection(sample_tuple)
     return sample_tuple, results_by_frame
+
+
+def _run_analyze(config: PipelineConfig, args: argparse.Namespace) -> int:
+    """Run selected strategies into independent directories and write a comparison summary."""
+    original_source = args.image.resolve()
+    if not original_source.is_file():
+        raise FileNotFoundError(f"Image not found: '{original_source}'.")
+    root = config.output_directory / config.run_id
+    root.mkdir(parents=True, exist_ok=True)
+    source = root / "input.png"
+    pixels = cv2.imread(str(original_source), cv2.IMREAD_COLOR)
+    if pixels is None or not cv2.imwrite(str(source), pixels):
+        raise OSError(f"Could not normalize input image '{original_source}'.")
+    source_fingerprint = hashlib.sha256(source.read_bytes()).hexdigest()
+    selected = (
+        ("baseline", "region-first") if args.strategy == "all" else (args.strategy,)
+    )
+    successful: list[bool] = []
+    if "baseline" in selected:
+        successful.append(
+            _run_baseline_image(
+                config, source, root / "baseline", source_fingerprint, args.overwrite
+            )
+        )
+    if "region-first" in selected:
+        successful.append(
+            _run_region_first_image(
+                config, source, root / "region-first", source_fingerprint, args.overwrite
+            )
+        )
+    _write_comparison(root, original_source, source_fingerprint)
+    print(f"Analysis complete. Artifacts: {root}")
+    return 0 if all(successful) else 2
+
+
+def _run_baseline_image(
+    config: PipelineConfig,
+    source: Path,
+    output: Path,
+    source_fingerprint: str,
+    overwrite: bool,
+) -> bool:
+    from image_context.adapters.model_factory import TransformersModelFactory
+
+    fingerprint = _strategy_fingerprint(config, source_fingerprint, "baseline")
+    artifacts = ArtifactRepository(output)
+    artifacts.initialize(
+        {
+            "schema_version": 1,
+            "fingerprint": fingerprint,
+            "strategy": "baseline",
+            "source_image": str(output / "input.png"),
+            "source_fingerprint": source_fingerprint,
+            "model_loading_strategy": "one-at-a-time",
+            "stage_fingerprints": _stage_fingerprints(
+                fingerprint, ("vlm", "grounding", "segmentation")
+            ),
+        },
+        overwrite=overwrite,
+    )
+    result_path = output / "frames" / "image" / "result.json"
+    completion_path = output / "complete.json"
+    if _baseline_artifacts_complete(output) and not overwrite:
+        print("[baseline] using completed strategy artifacts")
+        completion = json.loads(completion_path.read_text(encoding="utf-8"))
+        return bool(completion.get("successful"))
+    existing_vlm_results = sum(
+        (output / "frames" / "image" / f"vlm_{name}.json").is_file()
+        for name in ("objects", "environment", "risks")
+    )
+    strategy_input = output / "input.png"
+    shutil.copy2(source, strategy_input)
+    sample = _image_sample(strategy_input)
+    _reset_cuda_peak_memory()
+    started = time.perf_counter()
+    pipeline = ImageContextPipeline(
+        sampler=RosbagImageSampler(config.dataset.bag_path, config.dataset.image_topic),
+        model_factory=TransformersModelFactory(config.qwen, config.grounding, config.sam2),
+        artifacts=artifacts,
+        progress=ConsoleProgressReporter(),
+        minimum_concept_confidence=config.minimum_concept_confidence,
+        indoor_fallback_queries=config.indoor_fallback_queries,
+        outdoor_fallback_queries=config.outdoor_fallback_queries,
+    )
+    outcome = pipeline.analyze(sample)
+    result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
+    segmentations = result.get("segmentations", [])
+    segmented_ids = {item.get("detection_id") for item in segmentations}
+    detections = [
+        item for item in result.get("detections", []) if item.get("detection_id") in segmented_ids
+    ]
+    _write_json_file(
+        output / "metrics.json",
+        {
+            "strategy": "baseline",
+            "elapsed_seconds": time.perf_counter() - started,
+            "completed_images": len(outcome.completed_frame_ids),
+            "failed_images": len(outcome.failed_frame_ids),
+            "stage_seconds": pipeline.stage_seconds,
+            "semantic_regions": len(segmentations),
+            "labeled_regions": len(segmentations),
+            "average_confidence": (
+                sum(float(item.get("confidence", 0.0)) for item in detections) / len(detections)
+                if detections
+                else 0.0
+            ),
+            "vlm_calls": 3 - existing_vlm_results,
+            "peak_vram_bytes": _cuda_peak_memory(),
+        },
+    )
+    successful = not outcome.failed_frame_ids
+    _write_json_file(
+        completion_path,
+        {"status": "complete" if successful else "failed", "successful": successful},
+    )
+    return successful
+
+
+def _run_region_first_image(
+    config: PipelineConfig,
+    source: Path,
+    output: Path,
+    source_fingerprint: str,
+    overwrite: bool,
+) -> bool:
+    from image_context.adapters.region_first import TransformersRegionFirstModelFactory
+    from image_context.region_pipeline import RegionFirstContextPipeline
+    from image_context.region_prompts import REGION_PROMPT_VERSION
+
+    fingerprint = _strategy_fingerprint(config, source_fingerprint, "region-first")
+    manifest_path = output / "manifest.json"
+    if output.exists() and overwrite:
+        shutil.rmtree(output)
+    if manifest_path.is_file():
+        existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if existing.get("fingerprint") != fingerprint:
+            raise ValueError(
+                f"Strategy directory '{output}' has a different configuration. "
+                "Use --overwrite or another --run-id."
+            )
+        completion_path = output / "complete.json"
+        if _region_artifacts_complete(output):
+            print("[region-first] using completed strategy artifacts")
+            completion = json.loads(completion_path.read_text(encoding="utf-8"))
+            return bool(completion.get("successful"))
+    output.mkdir(parents=True, exist_ok=True)
+    stage_fingerprints = _stage_fingerprints(
+        fingerprint,
+        ("region-discovery", "dense-features", "vlm-global-local", "fusion"),
+    )
+    _write_json_file(
+        manifest_path,
+        {
+            "schema_version": 1,
+            "fingerprint": fingerprint,
+            "strategy": "region-first",
+            "source_image": str(output / "input.png"),
+            "source_fingerprint": source_fingerprint,
+            "prompt_version": REGION_PROMPT_VERSION,
+            "model_loading_strategy": "one-at-a-time",
+            "stage_fingerprints": stage_fingerprints,
+        },
+    )
+    strategy_input = output / "input.png"
+    shutil.copy2(source, strategy_input)
+    sample = _image_sample(strategy_input)
+    _reset_cuda_peak_memory()
+    pipeline = RegionFirstContextPipeline(
+        TransformersRegionFirstModelFactory(config.sam2, config.region_first, config.qwen),
+        output,
+        stage_fingerprints,
+    )
+    outcome = pipeline.analyze(sample)
+    metrics_path = output / "metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["peak_vram_bytes"] = _cuda_peak_memory()
+    _write_json_file(metrics_path, metrics)
+    return not outcome.discovered_region_count or bool(outcome.semantic_regions)
+
+
+def _strategy_fingerprint(
+    config: PipelineConfig, source_fingerprint: str, strategy: str
+) -> str:
+    payload: dict[str, object] = {
+        "source": source_fingerprint,
+        "strategy": strategy,
+        "qwen": vars(config.qwen),
+        "sam2": vars(config.sam2),
+    }
+    if strategy == "baseline":
+        from image_context.prompts import PROMPT_VERSION
+
+        payload["grounding"] = vars(config.grounding)
+        payload["minimum_concept_confidence"] = config.minimum_concept_confidence
+        payload["indoor_fallback_queries"] = config.indoor_fallback_queries
+        payload["outdoor_fallback_queries"] = config.outdoor_fallback_queries
+        payload["prompt_version"] = PROMPT_VERSION
+    else:
+        from image_context.region_prompts import REGION_PROMPT_VERSION
+
+        payload["region_first"] = vars(config.region_first)
+        payload["prompt_version"] = REGION_PROMPT_VERSION
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode()).hexdigest()
+
+
+def _write_comparison(root: Path, source: Path, source_fingerprint: str) -> None:
+    strategies: dict[str, object] = {}
+    for name in ("baseline", "region-first"):
+        metrics_path = root / name / "metrics.json"
+        manifest_path = root / name / "manifest.json"
+        complete_path = root / name / "complete.json"
+        artifacts_complete = (
+            _baseline_artifacts_complete(root / name)
+            if name == "baseline"
+            else _region_artifacts_complete(root / name)
+        )
+        if (
+            artifacts_complete
+            and metrics_path.is_file()
+            and manifest_path.is_file()
+            and complete_path.is_file()
+        ):
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if manifest.get("source_fingerprint") != source_fingerprint:
+                continue
+            strategies[name] = json.loads(metrics_path.read_text(encoding="utf-8"))
+    _write_json_file(
+        root / "comparison.json",
+        {
+            "schema_version": 1,
+            "source_image": str(source),
+            "source_fingerprint": source_fingerprint,
+            "strategies": strategies,
+        },
+    )
+
+
+def _stage_fingerprints(fingerprint: str, stages: tuple[str, ...]) -> dict[str, str]:
+    return {
+        stage: hashlib.sha256(f"{fingerprint}:{stage}".encode()).hexdigest()
+        for stage in stages
+    }
+
+
+def _write_json_file(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _image_sample(source: Path) -> ImageSample:
+    pixels = cv2.imread(str(source), cv2.IMREAD_COLOR)
+    if pixels is None:
+        raise FileNotFoundError(f"Image not found or unreadable: '{source}'.")
+    height, width = pixels.shape[:2]
+    return ImageSample("image", 0, 0, width, height, source)
+
+
+def _reset_cuda_peak_memory() -> None:
+    try:
+        import torch
+    except ImportError:
+        return
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+
+
+def _cuda_peak_memory() -> int | None:
+    try:
+        import torch
+    except ImportError:
+        return None
+    return int(torch.cuda.max_memory_allocated()) if torch.cuda.is_available() else None
+
+
+def _baseline_artifacts_complete(output: Path) -> bool:
+    required = (
+        output / "complete.json",
+        output / "metrics.json",
+        output / "frames" / "image" / "result.json",
+        output / "frames" / "image" / "overlay.png",
+    )
+    if not all(path.is_file() for path in required):
+        return False
+    result = json.loads(required[2].read_text(encoding="utf-8"))
+    for segmentation in result.get("segmentations", []):
+        mask_path = Path(segmentation.get("mask_path", ""))
+        if not mask_path.is_absolute():
+            mask_path = output / mask_path
+        if not mask_path.is_file():
+            return False
+    return True
+
+
+def _region_artifacts_complete(output: Path) -> bool:
+    result_path = output / "semantic_regions.json"
+    required = (
+        output / "complete.json",
+        output / "metrics.json",
+        output / "global_context.json",
+        output / "region_overlay.png",
+        result_path,
+    )
+    if not all(path.is_file() for path in required):
+        return False
+    metrics = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
+    if "peak_vram_bytes" not in metrics:
+        return False
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    for region in result.get("semantic_regions", []):
+        region_id = region.get("region_id", "")
+        associated_paths = (
+            output / region.get("mask_path", ""),
+            output / region.get("visual_embedding_path", ""),
+            output / "regions" / region_id / "context.png",
+        )
+        if not all(path.is_file() for path in associated_paths):
+            return False
+    return True
 
 
 if __name__ == "__main__":

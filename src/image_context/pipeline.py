@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -29,6 +30,8 @@ class PipelineOutcome:
 class ImageContextPipeline:
     """Run extraction, contextual analysis, grounding, and segmentation in full passes."""
 
+    strategy_name = "baseline"
+
     def __init__(
         self,
         sampler: ImageSampler,
@@ -47,16 +50,37 @@ class ImageContextPipeline:
         self._minimum_concept_confidence = minimum_concept_confidence
         self._indoor_fallback_queries = indoor_fallback_queries
         self._outdoor_fallback_queries = outdoor_fallback_queries
+        self._stage_seconds: dict[str, float] = {}
+
+    @property
+    def stage_seconds(self) -> dict[str, float]:
+        """Return timings from the latest execution for experimental comparison."""
+        return dict(self._stage_seconds)
 
     def execute(self, sample_size: int, seed: int) -> PipelineOutcome:
         """Execute all stages and isolate model errors to their source frame."""
+        self._stage_seconds = {}
         self._progress.stage("sample-images", sample_size)
+        started = time.perf_counter()
         samples = self._sampler.sample(sample_size, seed, self._artifacts.frames_directory)
         self._artifacts.write_selection(samples)
+        self._stage_seconds["sample_images"] = time.perf_counter() - started
         for sample in samples:
             self._progress.advance(sample.frame_id)
 
+        started = time.perf_counter()
         pass_results = self._run_vlm_pass(samples)
+        self._stage_seconds["vlm"] = time.perf_counter() - started
+        return self.execute_from_results(samples, pass_results)
+
+    def analyze(self, sample: ImageSample) -> PipelineOutcome:
+        """Analyze one prepared image through the unchanged baseline model sequence."""
+        self._stage_seconds = {}
+        samples = (sample,)
+        self._artifacts.write_selection(samples)
+        started = time.perf_counter()
+        pass_results = self._run_vlm_pass(samples)
+        self._stage_seconds["vlm"] = time.perf_counter() - started
         return self.execute_from_results(samples, pass_results)
 
     def execute_from_results(
@@ -65,6 +89,7 @@ class ImageContextPipeline:
         pass_results: dict[str, tuple[VlmPassResult, ...]],
     ) -> PipelineOutcome:
         """Run consolidation, grounding, and segmentation from persisted VLM responses."""
+        started = time.perf_counter()
         concepts = {
             frame_id: self._with_fallback(
                 consolidate_concepts(results, self._minimum_concept_confidence), results
@@ -74,9 +99,14 @@ class ImageContextPipeline:
         for sample in samples:
             if sample.frame_id in concepts:
                 self._artifacts.write_concepts(sample, concepts[sample.frame_id])
+        self._stage_seconds["consolidation"] = time.perf_counter() - started
 
+        started = time.perf_counter()
         detections = self._run_grounding_pass(samples, concepts)
+        self._stage_seconds["grounding"] = time.perf_counter() - started
+        started = time.perf_counter()
         completed = self._run_segmentation_pass(samples, pass_results, concepts, detections)
+        self._stage_seconds["segmentation"] = time.perf_counter() - started
         failed = tuple(sample.frame_id for sample in samples if sample.frame_id not in completed)
         return PipelineOutcome(samples, tuple(completed), failed)
 
