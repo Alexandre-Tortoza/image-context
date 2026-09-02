@@ -3,6 +3,9 @@
 Laboratorio independente para experimentar enriquecimento contextual de imagens antes de
 portar os resultados para o `vlm-context-map`.
 
+> Documentacao detalhada: [`docs/`](docs/README.md), com arquitetura, pipelines, execucao,
+> artefatos e diagramas Mermaid.
+
 O fluxo inicial seleciona uma amostra reproduzivel do topico RGB do Corridor02 e executa:
 
 ```text
