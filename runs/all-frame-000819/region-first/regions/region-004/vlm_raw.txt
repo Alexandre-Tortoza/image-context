@@ -1,0 +1,13 @@
+{
+    "region_id": "region-004",
+    "label": "ceiling light fixture",
+    "description": "a rectangular ceiling-mounted fluorescent light fixture emitting yellowish illumination",
+    "attributes": [
+        "rectangular",
+        "fluorescent",
+        "yellowish glow"
+    ],
+    "condition": "on",
+    "confidence": 0.95,
+    "candidate_relations": []
+}

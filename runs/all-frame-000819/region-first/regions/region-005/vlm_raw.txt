@@ -1,0 +1,13 @@
+{
+    "region_id": "region-005",
+    "label": "ceiling light fixture",
+    "description": "a yellow rectangular ceiling light fixture mounted on a grid of white tiles",
+    "attributes": [
+        "rectangular",
+        "yellow",
+        "mounted on ceiling"
+    ],
+    "condition": "on",
+    "confidence": 0.92,
+    "candidate_relations": []
+}

@@ -1,0 +1,13 @@
+{
+    "region_id": "region-006",
+    "label": "vertical yellow stripe",
+    "description": "a vertical yellow stripe on a wall in a dimly lit indoor hallway.",
+    "attributes": [
+        "yellow color",
+        "vertical orientation",
+        "on wall"
+    ],
+    "condition": "visible",
+    "confidence": 0.95,
+    "candidate_relations": []
+}

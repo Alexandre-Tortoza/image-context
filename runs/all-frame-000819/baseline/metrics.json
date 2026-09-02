@@ -1,0 +1,17 @@
+{
+  "average_confidence": 0.6004243493080139,
+  "completed_images": 1,
+  "elapsed_seconds": 25.175903657000163,
+  "failed_images": 0,
+  "labeled_regions": 7,
+  "peak_vram_bytes": 3141982720,
+  "semantic_regions": 7,
+  "stage_seconds": {
+    "consolidation": 0.013304906009580009,
+    "grounding": 8.596779429004528,
+    "segmentation": 3.147383806994185,
+    "vlm": 13.365871931004222
+  },
+  "strategy": "baseline",
+  "vlm_calls": 3
+}

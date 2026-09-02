@@ -1,0 +1,15 @@
+{
+  "box_fill_ratio": 0.6754935002407318,
+  "confidence": 0.9759819507598877,
+  "detection_id": "c4c6c10ed207",
+  "largest_component_share": 1.0,
+  "mask_area_fraction": 0.018268229166666667,
+  "mask_area_pixels": 5612,
+  "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/c4c6c10ed207.png",
+  "refined_bounding_box": [
+    82,
+    420,
+    212,
+    480
+  ]
+}

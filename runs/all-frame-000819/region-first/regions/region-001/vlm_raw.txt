@@ -1,0 +1,17 @@
+{
+  "region_id": "region-001",
+  "label": "corridor floor",
+  "description": "A wide, yellow-painted floor extending down a long indoor hallway, with a vehicle’s front chassis and tires partially visible in the foreground.",
+  "attributes": [
+    "yellow paint",
+    "tiled flooring",
+    "long linear perspective",
+    "dim artificial lighting"
+  ],
+  "condition": "visible",
+  "confidence": 0.95,
+  "candidate_relations": [
+    "connected to vehicle chassis",
+    "part of hallway structure"
+  ]
+}

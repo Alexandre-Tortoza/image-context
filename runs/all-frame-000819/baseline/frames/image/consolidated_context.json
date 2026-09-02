@@ -1,0 +1,164 @@
+{
+  "concepts": [
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "robot",
+      "grounding_query": "robot",
+      "label": "robot",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "wheel",
+      "grounding_query": "wheel",
+      "label": "wheel",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "door",
+      "grounding_query": "door",
+      "label": "door",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "doorway",
+      "grounding_query": "doorway",
+      "label": "doorway",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "exit sign",
+      "grounding_query": "exit sign",
+      "label": "exit sign",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "window",
+      "grounding_query": "window",
+      "label": "window",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "floor",
+      "grounding_query": "floor",
+      "label": "floor",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "wall",
+      "grounding_query": "wall",
+      "label": "wall",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "ceiling light",
+      "grounding_query": "ceiling light",
+      "label": "ceiling light",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "debris",
+      "grounding_query": "debris",
+      "label": "debris",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    }
+  ]
+}

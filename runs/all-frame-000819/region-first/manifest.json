@@ -1,0 +1,15 @@
+{
+  "fingerprint": "8244f1cfa0c90d8ae87e32c8d4a71a7f93742e8cffd7e03a9290debef4c5f347",
+  "model_loading_strategy": "one-at-a-time",
+  "prompt_version": "region-first-v1",
+  "schema_version": 1,
+  "source_fingerprint": "27776a4336ab1e0677a4a5255075b1a345621e5141b1aa0975e1b39731b4b239",
+  "source_image": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/region-first/input.png",
+  "stage_fingerprints": {
+    "dense-features": "7820f0625583cc788a509e29c7f4254ff2b4e88507a0755b71f957d126a7b34c",
+    "fusion": "0735cae3dcffa9f4bb78beb811e4a4f530d5ea3dc7ff3f251d8a9e2b8cea3657",
+    "region-discovery": "5843b0fbfe508576740d8007111640cd0fcd4f9f03a4b14c766f373fc882e908",
+    "vlm-global-local": "a29ba6459c3d9549c5b835646fbe65ec1c2ff35656317f69ea5bfd0b845e073b"
+  },
+  "strategy": "region-first"
+}

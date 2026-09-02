@@ -1,0 +1,16 @@
+{
+  "average_confidence": 0.9457142857142857,
+  "discarded_regions": 0,
+  "discovered_regions": 7,
+  "elapsed_seconds": 44.80252169498999,
+  "labeled_regions": 7,
+  "peak_vram_bytes": 3276213760,
+  "semantic_regions": 7,
+  "stage_seconds": {
+    "dense_features": 1.0706212509976467,
+    "region_discovery": 2.192750807007542,
+    "vlm_global_and_local": 41.48319355399872
+  },
+  "strategy": "region-first",
+  "vlm_calls": 8
+}

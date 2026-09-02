@@ -1,0 +1,13 @@
+{
+  "concepts": [],
+  "pass_name": "environment",
+  "raw_response": "{\n  \"concepts\": [],\n  \"scene_attributes\": {\n    \"lighting\": \"artificial overhead fluorescent\",\n    \"visibility\": \"clear\",\n    \"environment\": \"indoor hallway with tiled floor and closed doors\",\n    \"navigability\": \"unobstructed\"\n  },\n  \"risks\": []\n}",
+  "rejected_entries": [],
+  "risks": [],
+  "scene_attributes": {
+    "environment": "indoor hallway with tiled floor and closed doors",
+    "lighting": "artificial overhead fluorescent",
+    "navigability": "unobstructed",
+    "visibility": "clear"
+  }
+}

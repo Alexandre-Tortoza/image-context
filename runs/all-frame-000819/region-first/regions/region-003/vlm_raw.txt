@@ -1,0 +1,16 @@
+{
+  "region_id": "region-003",
+  "label": "doorway entrance",
+  "description": "A close-up view of a doorway with a white wall on the right side and a red door frame on the left, showing part of the interior threshold.",
+  "attributes": [
+    "white wall",
+    "red door frame",
+    "threshold edge"
+  ],
+  "condition": "partial visibility",
+  "confidence": 0.95,
+  "candidate_relations": [
+    "adjacent to hallway",
+    "part of linear corridor structure"
+  ]
+}

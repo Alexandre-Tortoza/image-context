@@ -1,0 +1,13 @@
+{
+  "region_id": "region-000",
+  "label": "corridor floor",
+  "description": "A section of the floor in a long, dimly lit indoor hallway, showing a light-colored, slightly reflective surface with faint shadows from overhead lights.",
+  "attributes": [
+    "light-colored flooring",
+    "slightly reflective",
+    "faint shadowing"
+  ],
+  "condition": "visible",
+  "confidence": 0.95,
+  "candidate_relations": []
+}

@@ -1,0 +1,10 @@
+{
+  "concepts": [],
+  "scene_attributes": {
+    "lighting": "artificial overhead fluorescent",
+    "visibility": "clear",
+    "environment": "indoor hallway with tiled floor and closed doors",
+    "navigability": "unobstructed"
+  },
+  "risks": []
+}

@@ -1,0 +1,89 @@
+{
+  "regions": [
+    {
+      "bounding_box": [
+        48.0,
+        275.0,
+        197.0,
+        323.0
+      ],
+      "confidence": 0.9519134759902954,
+      "mask_path": "regions/region-000/mask.png",
+      "region_id": "region-000",
+      "source": "sam2-automatic-grid-prompt"
+    },
+    {
+      "bounding_box": [
+        12.0,
+        263.0,
+        640.0,
+        466.0
+      ],
+      "confidence": 0.9493178129196167,
+      "mask_path": "regions/region-001/mask.png",
+      "region_id": "region-001",
+      "source": "sam2-automatic-grid-prompt"
+    },
+    {
+      "bounding_box": [
+        205.0,
+        54.0,
+        272.0,
+        91.0
+      ],
+      "confidence": 0.920376718044281,
+      "mask_path": "regions/region-002/mask.png",
+      "region_id": "region-002",
+      "source": "sam2-automatic-grid-prompt"
+    },
+    {
+      "bounding_box": [
+        36.0,
+        8.0,
+        223.0,
+        296.0
+      ],
+      "confidence": 0.8925602436065674,
+      "mask_path": "regions/region-003/mask.png",
+      "region_id": "region-003",
+      "source": "sam2-automatic-grid-prompt"
+    },
+    {
+      "bounding_box": [
+        394.0,
+        50.0,
+        464.0,
+        110.0
+      ],
+      "confidence": 0.8908239006996155,
+      "mask_path": "regions/region-004/mask.png",
+      "region_id": "region-004",
+      "source": "sam2-automatic-grid-prompt"
+    },
+    {
+      "bounding_box": [
+        530.0,
+        40.0,
+        586.0,
+        77.0
+      ],
+      "confidence": 0.8710727095603943,
+      "mask_path": "regions/region-005/mask.png",
+      "region_id": "region-005",
+      "source": "sam2-automatic-grid-prompt"
+    },
+    {
+      "bounding_box": [
+        556.0,
+        171.0,
+        573.0,
+        265.0
+      ],
+      "confidence": 0.7546119689941406,
+      "mask_path": "regions/region-006/mask.png",
+      "region_id": "region-006",
+      "source": "sam2-automatic-grid-prompt"
+    }
+  ],
+  "stage_fingerprint": "5843b0fbfe508576740d8007111640cd0fcd4f9f03a4b14c766f373fc882e908"
+}

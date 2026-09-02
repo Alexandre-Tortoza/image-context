@@ -1,0 +1,10 @@
+{
+  "scene_type": "indoor hallway",
+  "scene_description": "A fisheye lens captures a long, dimly lit corridor with white walls and tiled floors, leading into darkness at the far end; a vehicle's front chassis and tires are visible in the foreground, suggesting an exploration or testing scenario.",
+  "global_attributes": [
+    "artificial lighting",
+    "linear layout",
+    "empty space"
+  ],
+  "potential_hazards": []
+}

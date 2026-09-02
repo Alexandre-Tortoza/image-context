@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_fingerprint": "27776a4336ab1e0677a4a5255075b1a345621e5141b1aa0975e1b39731b4b239",
+  "source_image": "/home/alexmrtr/Projects/image-context/runs/corridor02-v5-adaptive/frames/frame-000819/image.png",
+  "strategies": {
+    "baseline": {
+      "average_confidence": 0.6004243493080139,
+      "completed_images": 1,
+      "elapsed_seconds": 25.175903657000163,
+      "failed_images": 0,
+      "labeled_regions": 7,
+      "peak_vram_bytes": 3141982720,
+      "semantic_regions": 7,
+      "stage_seconds": {
+        "consolidation": 0.013304906009580009,
+        "grounding": 8.596779429004528,
+        "segmentation": 3.147383806994185,
+        "vlm": 13.365871931004222
+      },
+      "strategy": "baseline",
+      "vlm_calls": 3
+    },
+    "region-first": {
+      "average_confidence": 0.9457142857142857,
+      "discarded_regions": 0,
+      "discovered_regions": 7,
+      "elapsed_seconds": 44.80252169498999,
+      "labeled_regions": 7,
+      "peak_vram_bytes": 3276213760,
+      "semantic_regions": 7,
+      "stage_seconds": {
+        "dense_features": 1.0706212509976467,
+        "region_discovery": 2.192750807007542,
+        "vlm_global_and_local": 41.48319355399872
+      },
+      "strategy": "region-first",
+      "vlm_calls": 8
+    }
+  }
+}

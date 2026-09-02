@@ -1,0 +1,14 @@
+{
+    "region_id": "region-002",
+    "label": "ceiling light fixture",
+    "description": "a rectangular ceiling-mounted fluorescent light fixture with multiple horizontal tubes emitting bright artificial light.",
+    "attributes": [
+        "rectangular",
+        "fluorescent",
+        "installed on ceiling",
+        "artificial lighting"
+    ],
+    "condition": "on",
+    "confidence": 0.95,
+    "candidate_relations": []
+}

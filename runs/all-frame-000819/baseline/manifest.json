@@ -1,0 +1,13 @@
+{
+  "fingerprint": "f0f2b4ad057d7dfebb573bca06a3b2419bb3865280b8266c105650689bd1f1ca",
+  "model_loading_strategy": "one-at-a-time",
+  "schema_version": 1,
+  "source_fingerprint": "27776a4336ab1e0677a4a5255075b1a345621e5141b1aa0975e1b39731b4b239",
+  "source_image": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/input.png",
+  "stage_fingerprints": {
+    "grounding": "14f71d350764b6d61732cbd8611a22faca7b9e339d267db22d21b3ba4907dd7c",
+    "segmentation": "f459ae1c0babbf6ec530656db94dbe0ff86b32dd86eacfc1973c8c40ac41c158",
+    "vlm": "c924b3776ef6aab970a64fc4e0b4e8894096f70f67a7bcdb00501614e101a81b"
+  },
+  "strategy": "baseline"
+}

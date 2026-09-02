@@ -1,0 +1,551 @@
+{
+  "concepts": [
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "robot",
+      "grounding_query": "robot",
+      "label": "robot",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "wheel",
+      "grounding_query": "wheel",
+      "label": "wheel",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "door",
+      "grounding_query": "door",
+      "label": "door",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "doorway",
+      "grounding_query": "doorway",
+      "label": "doorway",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "exit sign",
+      "grounding_query": "exit sign",
+      "label": "exit sign",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "window",
+      "grounding_query": "window",
+      "label": "window",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "floor",
+      "grounding_query": "floor",
+      "label": "floor",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "wall",
+      "grounding_query": "wall",
+      "label": "wall",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "ceiling light",
+      "grounding_query": "ceiling light",
+      "label": "ceiling light",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    },
+    {
+      "attributes": {},
+      "confidence": 0.6,
+      "detector_query": "debris",
+      "grounding_query": "debris",
+      "label": "debris",
+      "parser_notes": [
+        "configured indoor fallback after empty VLM result"
+      ],
+      "region_kind": "bounded_object",
+      "source_pass": "objects",
+      "spatial": {
+        "depth": null,
+        "horizontal": null
+      }
+    }
+  ],
+  "detections": [
+    {
+      "bounding_box": [
+        472.6211853027344,
+        418.409423828125,
+        584.3986206054688,
+        479.91455078125
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "wheel",
+        "grounding_query": "wheel",
+        "label": "wheel",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.7539425492286682,
+      "detection_id": "673e2f607886"
+    },
+    {
+      "bounding_box": [
+        79.29376983642578,
+        418.3512268066406,
+        212.71441650390625,
+        479.53533935546875
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "wheel",
+        "grounding_query": "wheel",
+        "label": "wheel",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.7499428987503052,
+      "detection_id": "c4c6c10ed207"
+    },
+    {
+      "bounding_box": [
+        194.96641540527344,
+        95.57136535644531,
+        242.83460998535156,
+        288.2965087890625
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "door",
+        "grounding_query": "door",
+        "label": "door",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.5116342306137085,
+      "detection_id": "962ba60fb964"
+    },
+    {
+      "bounding_box": [
+        92.83894348144531,
+        57.757354736328125,
+        120.89039611816406,
+        85.86199951171875
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "exit sign",
+        "grounding_query": "exit sign",
+        "label": "exit sign",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.49369552731513977,
+      "detection_id": "1e76ed8c1a4e"
+    },
+    {
+      "bounding_box": [
+        243.29150390625,
+        2.0762228965759277,
+        411.1591796875,
+        51.655033111572266
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "window",
+        "grounding_query": "window",
+        "label": "window",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.45775169134140015,
+      "detection_id": "a81fcf900336"
+    },
+    {
+      "bounding_box": [
+        11.098003387451172,
+        255.14276123046875,
+        641.0550537109375,
+        478.31976318359375
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "floor",
+        "grounding_query": "floor",
+        "label": "floor",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.7521814703941345,
+      "detection_id": "e6b5e972d98a"
+    },
+    {
+      "bounding_box": [
+        243.20458984375,
+        2.1960549354553223,
+        411.44903564453125,
+        52.07269287109375
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "ceiling light",
+        "grounding_query": "ceiling light",
+        "label": "ceiling light",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.4838220775127411,
+      "detection_id": "2ad5e4ccf7f5"
+    }
+  ],
+  "grounding_attempts": [
+    {
+      "descriptive_query": "robot",
+      "detection_count": 0,
+      "detector_query": "robot",
+      "label": "robot"
+    },
+    {
+      "descriptive_query": "wheel",
+      "detection_count": 2,
+      "detector_query": "wheel",
+      "label": "wheel"
+    },
+    {
+      "descriptive_query": "door",
+      "detection_count": 1,
+      "detector_query": "door",
+      "label": "door"
+    },
+    {
+      "descriptive_query": "doorway",
+      "detection_count": 0,
+      "detector_query": "doorway",
+      "label": "doorway"
+    },
+    {
+      "descriptive_query": "exit sign",
+      "detection_count": 1,
+      "detector_query": "exit sign",
+      "label": "exit sign"
+    },
+    {
+      "descriptive_query": "window",
+      "detection_count": 1,
+      "detector_query": "window",
+      "label": "window"
+    },
+    {
+      "descriptive_query": "floor",
+      "detection_count": 1,
+      "detector_query": "floor",
+      "label": "floor"
+    },
+    {
+      "descriptive_query": "wall",
+      "detection_count": 0,
+      "detector_query": "wall",
+      "label": "wall"
+    },
+    {
+      "descriptive_query": "ceiling light",
+      "detection_count": 1,
+      "detector_query": "ceiling light",
+      "label": "ceiling light"
+    },
+    {
+      "descriptive_query": "debris",
+      "detection_count": 0,
+      "detector_query": "debris",
+      "label": "debris"
+    }
+  ],
+  "pass_status": {
+    "environment": {
+      "accepted_concepts": 0,
+      "rejected_entries": []
+    },
+    "objects": {
+      "accepted_concepts": 0,
+      "rejected_entries": []
+    },
+    "risks": {
+      "accepted_concepts": 0,
+      "rejected_entries": []
+    }
+  },
+  "risks": [],
+  "sample": {
+    "frame_id": "image",
+    "height": 480,
+    "image_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/input.png",
+    "source_index": 0,
+    "timestamp_ns": 0,
+    "width": 640
+  },
+  "scene_attributes_by_pass": {
+    "environment": {
+      "environment": "indoor hallway with tiled floor and closed doors",
+      "lighting": "artificial overhead fluorescent",
+      "navigability": "unobstructed",
+      "visibility": "clear"
+    },
+    "objects": {},
+    "risks": {}
+  },
+  "segmentations": [
+    {
+      "box_fill_ratio": 0.5640802092414996,
+      "confidence": 0.968264639377594,
+      "detection_id": "673e2f607886",
+      "largest_component_share": 1.0,
+      "mask_area_fraction": 0.01263671875,
+      "mask_area_pixels": 3882,
+      "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/673e2f607886.png",
+      "refined_bounding_box": [
+        473,
+        420,
+        582,
+        480
+      ]
+    },
+    {
+      "box_fill_ratio": 0.6754935002407318,
+      "confidence": 0.9759819507598877,
+      "detection_id": "c4c6c10ed207",
+      "largest_component_share": 1.0,
+      "mask_area_fraction": 0.018268229166666667,
+      "mask_area_pixels": 5612,
+      "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/c4c6c10ed207.png",
+      "refined_bounding_box": [
+        82,
+        420,
+        212,
+        480
+      ]
+    },
+    {
+      "box_fill_ratio": 0.6417100694444444,
+      "confidence": 0.9722701907157898,
+      "detection_id": "962ba60fb964",
+      "largest_component_share": 1.0,
+      "mask_area_fraction": 0.019251302083333335,
+      "mask_area_pixels": 5914,
+      "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/962ba60fb964.png",
+      "refined_bounding_box": [
+        196,
+        97,
+        240,
+        285
+      ]
+    },
+    {
+      "box_fill_ratio": 0.4094387755102041,
+      "confidence": 0.9541462063789368,
+      "detection_id": "1e76ed8c1a4e",
+      "largest_component_share": 1.0,
+      "mask_area_fraction": 0.001044921875,
+      "mask_area_pixels": 321,
+      "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/1e76ed8c1a4e.png",
+      "refined_bounding_box": [
+        94,
+        59,
+        121,
+        86
+      ]
+    },
+    {
+      "box_fill_ratio": 0.7822619047619047,
+      "confidence": 0.9755750894546509,
+      "detection_id": "a81fcf900336",
+      "largest_component_share": 1.0,
+      "mask_area_fraction": 0.021389973958333332,
+      "mask_area_pixels": 6571,
+      "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/a81fcf900336.png",
+      "refined_bounding_box": [
+        245,
+        4,
+        410,
+        51
+      ]
+    },
+    {
+      "box_fill_ratio": 0.5165291907576265,
+      "confidence": 0.9557518362998962,
+      "detection_id": "e6b5e972d98a",
+      "largest_component_share": 1.0,
+      "mask_area_fraction": 0.23584635416666666,
+      "mask_area_pixels": 72452,
+      "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/e6b5e972d98a.png",
+      "refined_bounding_box": [
+        11,
+        261,
+        640,
+        469
+      ]
+    },
+    {
+      "box_fill_ratio": 0.7826190476190477,
+      "confidence": 0.9756989479064941,
+      "detection_id": "2ad5e4ccf7f5",
+      "largest_component_share": 1.0,
+      "mask_area_fraction": 0.021399739583333334,
+      "mask_area_pixels": 6574,
+      "mask_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/frames/image/masks/2ad5e4ccf7f5.png",
+      "refined_bounding_box": [
+        245,
+        4,
+        410,
+        51
+      ]
+    }
+  ],
+  "status": "complete_with_masks"
+}

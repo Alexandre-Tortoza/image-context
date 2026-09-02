@@ -1,0 +1,248 @@
+{
+  "detections": [
+    {
+      "bounding_box": [
+        472.6211853027344,
+        418.409423828125,
+        584.3986206054688,
+        479.91455078125
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "wheel",
+        "grounding_query": "wheel",
+        "label": "wheel",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.7539425492286682,
+      "detection_id": "673e2f607886"
+    },
+    {
+      "bounding_box": [
+        79.29376983642578,
+        418.3512268066406,
+        212.71441650390625,
+        479.53533935546875
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "wheel",
+        "grounding_query": "wheel",
+        "label": "wheel",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.7499428987503052,
+      "detection_id": "c4c6c10ed207"
+    },
+    {
+      "bounding_box": [
+        194.96641540527344,
+        95.57136535644531,
+        242.83460998535156,
+        288.2965087890625
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "door",
+        "grounding_query": "door",
+        "label": "door",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.5116342306137085,
+      "detection_id": "962ba60fb964"
+    },
+    {
+      "bounding_box": [
+        92.83894348144531,
+        57.757354736328125,
+        120.89039611816406,
+        85.86199951171875
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "exit sign",
+        "grounding_query": "exit sign",
+        "label": "exit sign",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.49369552731513977,
+      "detection_id": "1e76ed8c1a4e"
+    },
+    {
+      "bounding_box": [
+        243.29150390625,
+        2.0762228965759277,
+        411.1591796875,
+        51.655033111572266
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "window",
+        "grounding_query": "window",
+        "label": "window",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.45775169134140015,
+      "detection_id": "a81fcf900336"
+    },
+    {
+      "bounding_box": [
+        11.098003387451172,
+        255.14276123046875,
+        641.0550537109375,
+        478.31976318359375
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "floor",
+        "grounding_query": "floor",
+        "label": "floor",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.7521814703941345,
+      "detection_id": "e6b5e972d98a"
+    },
+    {
+      "bounding_box": [
+        243.20458984375,
+        2.1960549354553223,
+        411.44903564453125,
+        52.07269287109375
+      ],
+      "concept": {
+        "attributes": {},
+        "confidence": 0.6,
+        "detector_query": "ceiling light",
+        "grounding_query": "ceiling light",
+        "label": "ceiling light",
+        "parser_notes": [
+          "configured indoor fallback after empty VLM result"
+        ],
+        "region_kind": "bounded_object",
+        "source_pass": "objects",
+        "spatial": {
+          "depth": null,
+          "horizontal": null
+        }
+      },
+      "confidence": 0.4838220775127411,
+      "detection_id": "2ad5e4ccf7f5"
+    }
+  ],
+  "grounding_attempts": [
+    {
+      "descriptive_query": "robot",
+      "detection_count": 0,
+      "detector_query": "robot",
+      "label": "robot"
+    },
+    {
+      "descriptive_query": "wheel",
+      "detection_count": 2,
+      "detector_query": "wheel",
+      "label": "wheel"
+    },
+    {
+      "descriptive_query": "door",
+      "detection_count": 1,
+      "detector_query": "door",
+      "label": "door"
+    },
+    {
+      "descriptive_query": "doorway",
+      "detection_count": 0,
+      "detector_query": "doorway",
+      "label": "doorway"
+    },
+    {
+      "descriptive_query": "exit sign",
+      "detection_count": 1,
+      "detector_query": "exit sign",
+      "label": "exit sign"
+    },
+    {
+      "descriptive_query": "window",
+      "detection_count": 1,
+      "detector_query": "window",
+      "label": "window"
+    },
+    {
+      "descriptive_query": "floor",
+      "detection_count": 1,
+      "detector_query": "floor",
+      "label": "floor"
+    },
+    {
+      "descriptive_query": "wall",
+      "detection_count": 0,
+      "detector_query": "wall",
+      "label": "wall"
+    },
+    {
+      "descriptive_query": "ceiling light",
+      "detection_count": 1,
+      "detector_query": "ceiling light",
+      "label": "ceiling light"
+    },
+    {
+      "descriptive_query": "debris",
+      "detection_count": 0,
+      "detector_query": "debris",
+      "label": "debris"
+    }
+  ]
+}

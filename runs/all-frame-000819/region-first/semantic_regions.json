@@ -1,0 +1,234 @@
+{
+  "failed_regions": [],
+  "global_context": {
+    "global_attributes": [
+      "artificial lighting",
+      "linear layout",
+      "empty space"
+    ],
+    "potential_hazards": [],
+    "scene_description": "A fisheye lens captures a long, dimly lit corridor with white walls and tiled floors, leading into darkness at the far end; a vehicle's front chassis and tires are visible in the foreground, suggesting an exploration or testing scenario.",
+    "scene_type": "indoor hallway"
+  },
+  "sample": {
+    "frame_id": "image",
+    "height": 480,
+    "image_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/region-first/input.png",
+    "width": 640
+  },
+  "schema_version": 1,
+  "semantic_regions": [
+    {
+      "attributes": [
+        "light-colored flooring",
+        "slightly reflective",
+        "faint shadowing"
+      ],
+      "bounding_box": [
+        48.0,
+        275.0,
+        197.0,
+        323.0
+      ],
+      "candidate_relations": [],
+      "condition": "visible",
+      "confidence": 0.95,
+      "description": "A section of the floor in a long, dimly lit indoor hallway, showing a light-colored, slightly reflective surface with faint shadows from overhead lights.",
+      "embedding_dimension": 384,
+      "geometry_confidence": 0.9519134759902954,
+      "label": "corridor floor",
+      "mask_path": "regions/region-000/mask.png",
+      "provenance": {
+        "geometry": "sam2-automatic-grid-prompt",
+        "global_context": "qwen-global",
+        "semantics": "qwen-local",
+        "visual_embedding": "dinov2-mask-pooling"
+      },
+      "region_id": "region-000",
+      "visual_embedding_path": "regions/region-000/visual_embedding.npy"
+    },
+    {
+      "attributes": [
+        "yellow paint",
+        "tiled flooring",
+        "long linear perspective",
+        "dim artificial lighting"
+      ],
+      "bounding_box": [
+        12.0,
+        263.0,
+        640.0,
+        466.0
+      ],
+      "candidate_relations": [
+        "connected to vehicle chassis",
+        "part of hallway structure"
+      ],
+      "condition": "visible",
+      "confidence": 0.95,
+      "description": "A wide, yellow-painted floor extending down a long indoor hallway, with a vehicle\u2019s front chassis and tires partially visible in the foreground.",
+      "embedding_dimension": 384,
+      "geometry_confidence": 0.9493178129196167,
+      "label": "corridor floor",
+      "mask_path": "regions/region-001/mask.png",
+      "provenance": {
+        "geometry": "sam2-automatic-grid-prompt",
+        "global_context": "qwen-global",
+        "semantics": "qwen-local",
+        "visual_embedding": "dinov2-mask-pooling"
+      },
+      "region_id": "region-001",
+      "visual_embedding_path": "regions/region-001/visual_embedding.npy"
+    },
+    {
+      "attributes": [
+        "rectangular",
+        "fluorescent",
+        "installed on ceiling",
+        "artificial lighting"
+      ],
+      "bounding_box": [
+        205.0,
+        54.0,
+        272.0,
+        91.0
+      ],
+      "candidate_relations": [],
+      "condition": "on",
+      "confidence": 0.95,
+      "description": "a rectangular ceiling-mounted fluorescent light fixture with multiple horizontal tubes emitting bright artificial light.",
+      "embedding_dimension": 384,
+      "geometry_confidence": 0.920376718044281,
+      "label": "ceiling light fixture",
+      "mask_path": "regions/region-002/mask.png",
+      "provenance": {
+        "geometry": "sam2-automatic-grid-prompt",
+        "global_context": "qwen-global",
+        "semantics": "qwen-local",
+        "visual_embedding": "dinov2-mask-pooling"
+      },
+      "region_id": "region-002",
+      "visual_embedding_path": "regions/region-002/visual_embedding.npy"
+    },
+    {
+      "attributes": [
+        "white wall",
+        "red door frame",
+        "threshold edge"
+      ],
+      "bounding_box": [
+        36.0,
+        8.0,
+        223.0,
+        296.0
+      ],
+      "candidate_relations": [
+        "adjacent to hallway",
+        "part of linear corridor structure"
+      ],
+      "condition": "partial visibility",
+      "confidence": 0.95,
+      "description": "A close-up view of a doorway with a white wall on the right side and a red door frame on the left, showing part of the interior threshold.",
+      "embedding_dimension": 384,
+      "geometry_confidence": 0.8925602436065674,
+      "label": "doorway entrance",
+      "mask_path": "regions/region-003/mask.png",
+      "provenance": {
+        "geometry": "sam2-automatic-grid-prompt",
+        "global_context": "qwen-global",
+        "semantics": "qwen-local",
+        "visual_embedding": "dinov2-mask-pooling"
+      },
+      "region_id": "region-003",
+      "visual_embedding_path": "regions/region-003/visual_embedding.npy"
+    },
+    {
+      "attributes": [
+        "rectangular",
+        "fluorescent",
+        "yellowish glow"
+      ],
+      "bounding_box": [
+        394.0,
+        50.0,
+        464.0,
+        110.0
+      ],
+      "candidate_relations": [],
+      "condition": "on",
+      "confidence": 0.95,
+      "description": "a rectangular ceiling-mounted fluorescent light fixture emitting yellowish illumination",
+      "embedding_dimension": 384,
+      "geometry_confidence": 0.8908239006996155,
+      "label": "ceiling light fixture",
+      "mask_path": "regions/region-004/mask.png",
+      "provenance": {
+        "geometry": "sam2-automatic-grid-prompt",
+        "global_context": "qwen-global",
+        "semantics": "qwen-local",
+        "visual_embedding": "dinov2-mask-pooling"
+      },
+      "region_id": "region-004",
+      "visual_embedding_path": "regions/region-004/visual_embedding.npy"
+    },
+    {
+      "attributes": [
+        "rectangular",
+        "yellow",
+        "mounted on ceiling"
+      ],
+      "bounding_box": [
+        530.0,
+        40.0,
+        586.0,
+        77.0
+      ],
+      "candidate_relations": [],
+      "condition": "on",
+      "confidence": 0.92,
+      "description": "a yellow rectangular ceiling light fixture mounted on a grid of white tiles",
+      "embedding_dimension": 384,
+      "geometry_confidence": 0.8710727095603943,
+      "label": "ceiling light fixture",
+      "mask_path": "regions/region-005/mask.png",
+      "provenance": {
+        "geometry": "sam2-automatic-grid-prompt",
+        "global_context": "qwen-global",
+        "semantics": "qwen-local",
+        "visual_embedding": "dinov2-mask-pooling"
+      },
+      "region_id": "region-005",
+      "visual_embedding_path": "regions/region-005/visual_embedding.npy"
+    },
+    {
+      "attributes": [
+        "yellow color",
+        "vertical orientation",
+        "on wall"
+      ],
+      "bounding_box": [
+        556.0,
+        171.0,
+        573.0,
+        265.0
+      ],
+      "candidate_relations": [],
+      "condition": "visible",
+      "confidence": 0.95,
+      "description": "a vertical yellow stripe on a wall in a dimly lit indoor hallway.",
+      "embedding_dimension": 384,
+      "geometry_confidence": 0.7546119689941406,
+      "label": "vertical yellow stripe",
+      "mask_path": "regions/region-006/mask.png",
+      "provenance": {
+        "geometry": "sam2-automatic-grid-prompt",
+        "global_context": "qwen-global",
+        "semantics": "qwen-local",
+        "visual_embedding": "dinov2-mask-pooling"
+      },
+      "region_id": "region-006",
+      "visual_embedding_path": "regions/region-006/visual_embedding.npy"
+    }
+  ],
+  "strategy": "region-first"
+}

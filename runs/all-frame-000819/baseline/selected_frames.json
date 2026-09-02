@@ -1,0 +1,12 @@
+{
+  "frames": [
+    {
+      "frame_id": "image",
+      "height": 480,
+      "image_path": "/home/alexmrtr/Projects/image-context/runs/all-frame-000819/baseline/input.png",
+      "source_index": 0,
+      "timestamp_ns": 0,
+      "width": 640
+    }
+  ]
+}
