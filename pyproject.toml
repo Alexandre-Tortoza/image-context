@@ -21,6 +21,7 @@ models = [
     "accelerate>=0.34",
     "bitsandbytes>=0.43",
     "torch>=2.4",
+    "torchvision>=0.19",
     "transformers>=4.57",
 ]
 dev = [
